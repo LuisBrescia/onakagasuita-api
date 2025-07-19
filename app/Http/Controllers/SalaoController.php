@@ -116,7 +116,7 @@ class SalaoController extends Controller
     public function showLayout(Request $request, $salaoId)
     {
         $salao = Salao::findOrFail($salaoId);
-        return response()->json($salao->layout);
+        return response()->json($salao->layout === null ? [] : $salao->layout, 200);
     }
 
     public function storeLayout(Request $request, $salaoId)

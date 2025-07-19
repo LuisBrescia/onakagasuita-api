@@ -38,7 +38,7 @@ class Salao extends Model
         return $this->belongsTo(Unidade::class);
     }
 
-    public function estaAberto(Carbon $horario = null): bool
+    public function estaAberto(Carbon $horario): bool
     {
         $horario = $horario ?? Carbon::now();
 
