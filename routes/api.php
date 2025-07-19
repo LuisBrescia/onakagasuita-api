@@ -8,6 +8,8 @@ use App\Http\Controllers\SalaoController;
 use App\Http\Controllers\MesaController;
 use App\Http\Controllers\OperadorController;
 use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\AuthController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -20,10 +22,13 @@ use App\Http\Controllers\ReservaController;
 |
 */
 
-Route::post('login', [\App\Http\Controllers\AuthController::class, 'login']);
-Route::post('operador/login', [\App\Http\Controllers\AuthController::class, 'operadorLogin']);
-Route::post('register', [\App\Http\Controllers\AuthController::class, 'register']);
-Route::post('/reservas', [ReservaController::class, 'store']);
+Route::prefix('auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login/operador', [AuthController::class, 'operadorLogin']);
+});
+
+Route::post('reservas', [ReservaController::class, 'store']);
 
 Route::get('unidades/all', [UnidadeController::class, 'all']);
 
@@ -34,7 +39,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('mesas', MesaController::class);
     Route::resource('operadores', OperadorController::class);
 
-    Route::get('/me', function (Request $request) {
+    Route::prefix('auth')->group(function () {
+        // Route::get('me', [AuthController::class, 'me']);
+        Route::post('logout', [AuthController::class, 'logout']);
+    });
+
+    Route::get('auth/me/too', [AuthController::class, 'me']);
+    Route::get('auth/me', function (Request $request) {
         return $request->user();
     });
 

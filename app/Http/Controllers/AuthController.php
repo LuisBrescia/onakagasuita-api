@@ -39,17 +39,17 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'email' => 'required|email',
+            'login' => 'required|email',
             'senha' => 'required',
         ]);
 
-        $user = Usuario::where('email', $data['email'])->first();
+        $user = Usuario::where('email', $data['login'])->first();
 
         if (is_null($user)) {
             return response()->json([
                 'message' => 'Usuário não encontrado',
                 'errors' => [
-                    'email' => ['Usuário não encontrado']
+                    'login' => ['Usuário não encontrado']
                 ]
             ], 422);
         }
@@ -58,7 +58,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Usuário suspenso, verifique sua caixa de e-mail sobre o motivo',
                 'errors' => [
-                    'email' => ['Usuário suspenso']
+                    'login' => ['Usuário suspenso']
                 ]
             ], 422);
         }
@@ -67,7 +67,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Usuário inativo, entre em contato com o administrador',
                 'errors' => [
-                    'email' => ['Usuário inativo']
+                    'login' => ['Usuário inativo']
                 ]
             ], 422);
         }
@@ -80,6 +80,8 @@ class AuthController extends Controller
                 ]
             ], 422);
         }
+
+        $user->tokens()->delete();
 
         $responseUser = new UsuarioAuthResource($user);
         $responseToken = $user->createToken('api', [$user->tipo]);
@@ -144,18 +146,16 @@ class AuthController extends Controller
         return response()->json(new UsuarioAuthResource(Auth::user()));
     }
 
-    public function logout()
+    public function logout(): JsonResponse
     {
         $user = Auth::user();
+        $table = config('sanctum.storage.database.table', 'personal_access_tokens');
 
-        $tokensTable = config('sanctum.storage.database.table', 'personal_access_tokens');
-
-        DB::table($tokensTable)
+        DB::table($table)
             ->where('tokenable_id', $user->id)
             ->where('tokenable_type', get_class($user))
-            ->whereJsonContains('abilities', 'all')
             ->delete();
 
-        return response()->json(null, 202);
+        return response()->json('Logout realizado com sucesso.', 202);
     }
 }

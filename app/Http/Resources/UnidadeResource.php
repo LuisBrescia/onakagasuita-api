@@ -29,7 +29,7 @@ class UnidadeResource extends JsonResource
             // 'created_at' => $this->created_at,
             // 'updated_at' => $this->updated_at,
             // Inclui informações da franquia associada, se carregada
-            'franquia' => new FranquiaResource($this->whenLoaded('franquia')),
+            // 'franquia' => new FranquiaResource($this->whenLoaded('franquia')),
         ];
     }
 }

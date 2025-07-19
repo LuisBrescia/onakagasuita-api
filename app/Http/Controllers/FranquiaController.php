@@ -14,7 +14,7 @@ class FranquiaController extends Controller
     {
         $perPage = $request->get('per_page', 10);
         $perPage = is_numeric($perPage) && $perPage > 0 ? (int)$perPage : 10;
-        
+
         $franquias = Franquia::paginate($perPage);
         return new FranquiaCollection($franquias);
     }
@@ -38,8 +38,8 @@ class FranquiaController extends Controller
         $franquia = Franquia::create($validatedData);
 
         return (new FranquiaResource($franquia))
-                    ->response()
-                    ->setStatusCode(Response::HTTP_CREATED);
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     public function update(Request $request, $id)
@@ -61,9 +61,27 @@ class FranquiaController extends Controller
 
     public function destroy($id)
     {
-        $franquia = Franquia::findOrFail($id);
+        $franquia = Franquia::with('unidades')->findOrFail($id);
+
+        // Armazena as unidades que serão deletadas
+        $unidadesApagadas = $franquia->unidades->map(function ($unidade) {
+            return [
+                'id' => $unidade->id,
+                'nome_fantasia' => $unidade->nome_fantasia,
+                'cidade' => $unidade->cidade,
+            ];
+        });
+
+        // Deleta as unidades
+        $franquia->unidades()->delete();
+
+        // Deleta a franquia
         $franquia->delete();
 
-        return response()->json(null, Response::HTTP_NO_CONTENT);
+        return response()->json([
+            'message' => 'Franquia apagada com sucesso junto com suas unidades.',
+            'franquia_id' => $franquia->id,
+            'unidades_apagadas' => $unidadesApagadas,
+        ], Response::HTTP_OK);
     }
 }

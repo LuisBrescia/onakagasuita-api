@@ -84,6 +84,10 @@ class UnidadeController extends Controller
     {
         $unidade = Unidade::findOrFail($id);
 
+        if (!$unidade) {
+            return response()->json(['message' => 'Unidade não encontrada'], 404);
+        }
+
         $validatedData = $request->validate([
             'franquia_id' => 'sometimes|required|exists:franquias,id',
             'nome_fantasia' => 'sometimes|required|string|max:255',
@@ -112,7 +116,9 @@ class UnidadeController extends Controller
         $unidade = Unidade::findOrFail($id);
         $unidade->delete();
 
-        return response()->json(null, Response::HTTP_NO_CONTENT);
+        return response()->json([
+            'message' => 'Unidade apagada com sucesso',
+        ], Response::HTTP_OK);
     }
 
     /**
