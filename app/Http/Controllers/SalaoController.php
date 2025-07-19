@@ -8,6 +8,7 @@ use App\Http\Resources\SalaoResource;
 use App\Http\Resources\SalaoCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Layout;
 
 class SalaoController extends Controller
 {
@@ -116,18 +117,58 @@ class SalaoController extends Controller
     public function showLayout(Request $request, $salaoId)
     {
         $salao = Salao::findOrFail($salaoId);
-        return response()->json($salao->layout === null ? [] : $salao->layout, 200);
+
+        if (!$salao) {
+            return response()->json(['message' => 'Salão não encontrado'], 404);
+        }
+
+        if (!$salao->layout_obj_id) {
+            return response()->json(['message' => 'Layout não indexado'], 404);
+        }
+
+        $layout = Layout::find($salao->layout_obj_id);
+
+        if (!$layout) {
+            $salao->layout_obj_id = null;
+            $salao->save();
+            return response()->json(['message' => 'Layout não encontrado'], 404);
+        }
+
+        $data = json_decode($layout);
+        $mesas = [];
+
+        foreach ($data as $key => $value) {
+            if (is_numeric($key)) {
+                $mesas[] = $value;
+            }
+        }
+
+        return response()->json($mesas, 200);
     }
 
     public function storeLayout(Request $request, $salaoId)
     {
-
-        $layout = $request->all();
-
         $salao = Salao::findOrFail($salaoId);
-        $salao->layout = $layout;
+
+        if (!$salao) {
+            return response()->json(['message' => 'Salão não encontrado'], 404);
+        }
+
+        if ($salao->layout_obj_id) {
+            $layoutAntigo = Layout::find($salao->layout_obj_id);
+            if ($layoutAntigo) {
+                $layoutAntigo->delete();
+            }
+        }
+
+        $layout = Layout::create($request->all());
+
+        $salao->layout_obj_id = $layout->id;
         $salao->save();
 
-        return response()->json(['message' => 'Mesas armazenadas com sucesso!', 'salao' => $salao], 200);
+        return response()->json([
+            'message' => 'Layout armazenado com sucesso!',
+            'layout' => $layout,
+        ], 200);
     }
 }

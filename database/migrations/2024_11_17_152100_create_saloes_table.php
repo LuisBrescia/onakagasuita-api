@@ -19,6 +19,7 @@ return new class extends Migration
             $table->time('horario_funcionamento_inicio');
             $table->time('horario_funcionamento_fim');
             $table->text('dias_funcionamento')->nullable();
+            $table->string('layout_obj_id')->nullable();
             $table->timestamps();
         });
     }

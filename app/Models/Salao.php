@@ -18,7 +18,7 @@ class Salao extends Model
         'horario_funcionamento_inicio',
         'horario_funcionamento_fim',
         'dias_funcionamento',
-        'layout',
+        'layout_obj_id',
     ];
 
     protected $casts = [
@@ -32,6 +32,15 @@ class Salao extends Model
     {
         return $this->hasMany(Mesa::class);
     }
+
+    public function layout()
+    {
+        if (!$this->layout_obj_id) {
+            return null;
+        }
+        return Layout::find($this->layout_obj_id);
+    }
+
 
     public function unidade(): BelongsTo
     {

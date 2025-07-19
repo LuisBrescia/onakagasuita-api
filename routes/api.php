@@ -40,13 +40,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('operadores', OperadorController::class);
 
     Route::prefix('auth')->group(function () {
-        // Route::get('me', [AuthController::class, 'me']);
+        Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
-    });
-
-    Route::get('auth/me/too', [AuthController::class, 'me']);
-    Route::get('auth/me', function (Request $request) {
-        return $request->user();
     });
 
     Route::get('saloes/{salaoId}/layout', [SalaoController::class, 'showLayout']);
